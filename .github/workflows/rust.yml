@@ -16,6 +16,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: Install SDL2 (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev
       - name: Build
         run: cargo build --verbose
       - name: Run tests
