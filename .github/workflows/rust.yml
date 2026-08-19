@@ -16,8 +16,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Install SDL2 (Ubuntu)
-        if: runner.os == 'Linux'
+      - name: cache pkgs
+        id: cache-apt
+        uses: actions/cache@v4
+      - name: install sdl2
         run: |
           sudo apt-get update
           sudo apt-get install -y libsdl2-dev
