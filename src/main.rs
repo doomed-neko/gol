@@ -1,3 +1,5 @@
+use std::env;
+
 use gol::{COLS, FILL_CHANCE, Game, ROWS, TILE_SIZE, WINDOW_HEIGHT, WINDOW_WIDTH};
 use rand::random_bool;
 use sdl2::{event::Event, keyboard::Keycode, mouse::MouseButton, pixels::Color, rect::Rect};
@@ -5,7 +7,16 @@ use sdl2::{event::Event, keyboard::Keycode, mouse::MouseButton, pixels::Color, r
 fn main() {
     let mut grid: Vec<bool> = vec![false; ROWS * COLS];
     grid.fill_with(|| rand::random_bool(FILL_CHANCE));
+    let mut game = Game::new(grid, COLS, ROWS);
 
+    if let Some(arg) = env::args().nth(1)
+        && arg == "nogui"
+    {
+        for _ in 0..100 {
+            game.next_gen();
+        }
+        return;
+    }
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
     let window = video_subsystem
@@ -13,7 +24,6 @@ fn main() {
         .position_centered()
         .build()
         .unwrap();
-    let mut game = Game::new(grid, COLS, ROWS);
     let mut canvas = window.into_canvas().build().unwrap();
 
     canvas.clear();
