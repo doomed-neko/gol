@@ -17,7 +17,10 @@ impl Game {
     }
 
     pub fn index_from_cords(&self, x: i32, y: i32) -> usize {
-        y as usize * self.cols + x as usize
+        let x = x.rem_euclid(self.cols as i32);
+        let y = y.rem_euclid(self.rows as i32);
+        let index = y as usize * self.cols + x as usize;
+        index
     }
 
     pub fn cords_from_index(&self, index: usize) -> (usize, usize) {
@@ -27,7 +30,7 @@ impl Game {
         (col, row)
     }
 
-    fn next_cell_state(&self, index: usize) -> bool {
+    pub fn next_cell_state(&self, index: usize) -> bool {
         let current = self.grid[index];
         let (col, row) = {
             let (col, row) = self.cords_from_index(index);
