@@ -1,119 +1,147 @@
-use std::{
-    hash::RandomState,
-    io::{stdin, stdout, Write},
-    process::{Command, ExitCode, Stdio},
-    thread::sleep,
-    time::Duration,
-};
+use rand::random_bool;
+use sdl2::{event::Event, keyboard::Keycode, mouse::MouseButton, pixels::Color, rect::Rect};
 
-const ROWS: usize = 10;
-const COLS: usize = 50;
+const FILL_CHANCE: f64 = 0.1;
+const WINDOW_WIDTH: u32 = 720 * 2;
+const WINDOW_HEIGHT: u32 = 480 * 2;
+const TILE_SIZE: u32 = 20;
+const ROWS: usize = (WINDOW_WIDTH / TILE_SIZE) as usize;
+const COLS: usize = (WINDOW_HEIGHT / TILE_SIZE) as usize;
 struct Game {
     grid: Vec<bool>,
 }
 
 impl Game {
     fn new(grid: Vec<bool>) -> Self {
-        // let mut grid: Vec<bool> = Vec::with_capacity(ROWS * COLS);
-        // grid.fill(false);
-        return Self { grid };
+        Self { grid }
     }
-    fn next_gen(&mut self) {
-        let mut new_gen: Vec<bool> = vec![false; ROWS * COLS];
-        new_gen.fill(false);
-        for row in 0..ROWS {
-            for col in 0..COLS {
-                let mut neighbors = 0;
-                let idx = row * COLS + col;
-                // left and right
-                neighbors += self.grid.get(idx + 1).unwrap_or(&false).to_owned() as i32;
-                neighbors += self
-                    .grid
-                    .get(idx.wrapping_sub(1))
-                    .unwrap_or(&false)
-                    .to_owned() as i32;
 
-                // above and below
-                neighbors += self
-                    .grid
-                    .get(idx.wrapping_sub(COLS))
-                    .unwrap_or(&false)
-                    .to_owned() as i32;
-                neighbors += self.grid.get(idx + COLS).unwrap_or(&false).to_owned() as i32;
+    pub fn index_from_cords(&self, x: i32, y: i32) -> usize {
+        y as usize * COLS + x as usize
+    }
 
-                // upper diagonals
-                neighbors += self
-                    .grid
-                    .get(idx.wrapping_sub(COLS + 1))
-                    .unwrap_or(&false)
-                    .to_owned() as i32;
-                neighbors += self
-                    .grid
-                    .get(idx.wrapping_sub(COLS - 1))
-                    .unwrap_or(&false)
-                    .to_owned() as i32;
+    pub fn cords_from_index(&self, index: usize) -> (usize, usize) {
+        let col = index % COLS;
+        let row = index / COLS;
 
-                // lower diagonals
-                neighbors += self.grid.get(idx + COLS + 1).unwrap_or(&false).to_owned() as i32;
-                neighbors += self
-                    .grid
-                    .get(idx.wrapping_sub(COLS - 1))
-                    .unwrap_or(&false)
-                    .to_owned() as i32;
-                let current = self.grid[idx];
-                if !current && neighbors == 3 {
-                    new_gen[idx] = true;
-                } else {
-                    if neighbors < 2 || neighbors > 3 {
-                        new_gen[idx] = false;
-                    } else {
-                        new_gen[idx] = true;
-                    }
+        (col, row)
+    }
+
+    fn next_cell_state(&self, index: usize) -> bool {
+        let current = self.grid[index];
+        let (col, row) = {
+            let (col, row) = self.cords_from_index(index);
+            (col as i32, row as i32)
+        };
+        let mut n = 0;
+        for x in [-1, 0, 1] {
+            for y in [-1, 0, 1] {
+                if x == 0 && y == 0 {
+                    continue;
+                }
+
+                if row + y >= ROWS as i32 || row + y < 0 || col + x >= COLS as i32 || col + x < 0 {
+                    continue;
+                }
+                if self.grid[self.index_from_cords(col + x, row + y) as usize] {
+                    n += 1
                 }
             }
         }
+        if current && (2..=3).contains(&n) {
+            return true;
+        }
+        if !current && n == 3 {
+            return true;
+        }
+        false
+    }
+
+    fn next_gen(&mut self) {
+        let new_gen: Vec<bool> = (0..(ROWS * COLS))
+            .into_iter()
+            .map(|x| self.next_cell_state(x))
+            .collect();
         self.grid = new_gen;
     }
-    fn print(&self) {
+}
+fn main() {
+    let mut grid: Vec<bool> = vec![false; ROWS * COLS];
+    grid.fill_with(|| rand::random_bool(FILL_CHANCE));
+
+    let sdl_context = sdl2::init().unwrap();
+    let video_subsystem = sdl_context.video().unwrap();
+    let window = video_subsystem
+        .window("rust+sdl2 Game Of Life", WINDOW_WIDTH, WINDOW_HEIGHT)
+        .position_centered()
+        .build()
+        .unwrap();
+    let mut game = Game::new(grid);
+    let mut canvas = window.into_canvas().build().unwrap();
+
+    canvas.clear();
+    canvas.present();
+    let mut event_pump = sdl_context.event_pump().unwrap();
+    'running: loop {
+        canvas.set_draw_color(Color::GREEN);
         for row in 0..ROWS {
             for col in 0..COLS {
                 let idx = row * COLS + col;
-                let ch = if self.grid[idx] { "#" } else { " " };
-                print!("{ch}");
+                if game.grid[idx] {
+                    canvas
+                        .fill_rect(Rect::new(
+                            row as i32 * TILE_SIZE as i32,
+                            col as i32 * TILE_SIZE as i32,
+                            TILE_SIZE,
+                            TILE_SIZE,
+                        ))
+                        .ok();
+                }
             }
-            println!()
         }
-    }
-}
-fn main() -> ExitCode {
-    Command::new("clear").stdout(Stdio::inherit()).output().ok();
-    println!("Welcome to the game of life, please fill the grid. \nit's a {ROWS} by {COLS} grid, you will enter each row and then the simulation will start");
-    println!("enter any char for a filled cell and a space for an empty cell, \neach line should be {COLS} long and should end with a newline");
-    let mut grid: Vec<bool> = vec![false; ROWS * COLS];
-    for row in 0..ROWS {
-        let mut buf = String::with_capacity(COLS + 1);
-        stdin().read_line(&mut buf).expect("read line");
-        buf.pop();
-        if buf.len() > COLS {
-            println!("Bad column!");
-            return ExitCode::FAILURE;
-        }
-        let mut col = 0;
-        for c in buf.chars() {
-            if c == ' ' {
-                grid[row * COLS + col] = false;
-            } else {
-                grid[row * COLS + col] = true;
+        for event in event_pump.poll_iter() {
+            match event {
+                Event::Quit { .. }
+                | Event::KeyDown {
+                    keycode: Some(Keycode::Escape),
+                    ..
+                }
+                | Event::KeyDown {
+                    keycode: Some(Keycode::Q),
+                    ..
+                } => break 'running,
+                Event::KeyDown {
+                    keycode: Some(Keycode::Return),
+                    ..
+                }
+                | Event::KeyDown {
+                    keycode: Some(Keycode::Space),
+                    ..
+                } => {
+                    game.next_gen();
+                }
+                Event::KeyDown {
+                    keycode: Some(Keycode::R),
+                    ..
+                } => {
+                    game.grid.fill_with(|| random_bool(FILL_CHANCE));
+                }
+                Event::MouseButtonDown {
+                    mouse_btn: MouseButton::Left,
+                    mut x,
+                    mut y,
+                    ..
+                } => {
+                    x /= TILE_SIZE as i32;
+                    y /= TILE_SIZE as i32;
+                    let index = game.index_from_cords(y, x);
+                    game.grid[index] = !game.grid[index];
+                }
+                _ => {}
             }
-            col += 1;
         }
-    }
-    let mut game = Game::new(grid);
-    loop {
-        Command::new("clear").stdout(Stdio::inherit()).output().ok();
-        stdout().flush().ok();
-        game.print();
-        sleep(Duration::from_millis(300));
-        game.next_gen();
+        canvas.present();
+        canvas.set_draw_color(Color::BLACK);
+        canvas.clear();
     }
 }
