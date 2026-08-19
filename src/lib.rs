@@ -7,20 +7,22 @@ pub const COLS: usize = (WINDOW_HEIGHT / TILE_SIZE) as usize;
 #[derive(Debug, Clone)]
 pub struct Game {
     pub grid: Vec<bool>,
+    pub cols: usize,
+    pub rows: usize,
 }
 
 impl Game {
-    pub fn new(grid: Vec<bool>) -> Self {
-        Self { grid }
+    pub fn new(grid: Vec<bool>, cols: usize, rows: usize) -> Self {
+        Self { grid, cols, rows }
     }
 
     pub fn index_from_cords(&self, x: i32, y: i32) -> usize {
-        y as usize * COLS + x as usize
+        y as usize * self.cols + x as usize
     }
 
     pub fn cords_from_index(&self, index: usize) -> (usize, usize) {
-        let col = index % COLS;
-        let row = index / COLS;
+        let col = index % self.cols;
+        let row = index / self.cols;
 
         (col, row)
     }
@@ -38,7 +40,11 @@ impl Game {
                     continue;
                 }
 
-                if row + y >= ROWS as i32 || row + y < 0 || col + x >= COLS as i32 || col + x < 0 {
+                if row + y >= self.rows as i32
+                    || row + y < 0
+                    || col + x >= self.cols as i32
+                    || col + x < 0
+                {
                     continue;
                 }
                 if self.grid[self.index_from_cords(col + x, row + y) as usize] {
@@ -56,7 +62,7 @@ impl Game {
     }
 
     pub fn next_gen(&mut self) {
-        let new_gen: Vec<bool> = (0..(ROWS * COLS))
+        let new_gen: Vec<bool> = (0..(self.rows * self.cols))
             .into_iter()
             .map(|x| self.next_cell_state(x))
             .collect();

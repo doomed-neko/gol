@@ -13,7 +13,7 @@ fn main() {
         .position_centered()
         .build()
         .unwrap();
-    let mut game = Game::new(grid);
+    let mut game = Game::new(grid, COLS, ROWS);
     let mut canvas = window.into_canvas().build().unwrap();
 
     canvas.clear();
