@@ -17,5 +17,5 @@ fn bench_cols_by_rows(c: &mut Criterion) {
     c.bench_function("ROWS*COLS", |b| b.iter(|| game.next_gen()));
 }
 
-criterion_group!(benches, bench_10k, bench_cols_by_rows);
+criterion_group!(benches, bench_cols_by_rows, bench_10k);
 criterion_main!(benches);
