@@ -23,7 +23,7 @@ fn main() {
         .size(WINDOW_WIDTH as i32, WINDOW_HEIGHT as i32)
         .title("rust+raylib Game Of Life")
         .build();
-    let mut fps = u32::MAX;
+    let mut fps = 10;
     rl.set_target_fps(fps);
     while !rl.window_should_close() {
         // quit
@@ -103,6 +103,12 @@ fn main() {
         // FPS +1 (hold)
         if rl.is_key_down(KeyboardKey::KEY_RIGHT_BRACKET) {
             fps += 1;
+            rl.set_target_fps(fps);
+        }
+
+        // FPS unlimited
+        if rl.is_key_down(KeyboardKey::KEY_U) {
+            fps = u32::MAX;
             rl.set_target_fps(fps);
         }
 
