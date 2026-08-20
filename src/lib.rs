@@ -22,7 +22,17 @@ impl Game {
             generation: 0,
         }
     }
+    pub fn new_random(cols: usize, rows: usize) -> Self {
+        let mut grid = Vec::with_capacity(cols * rows);
+        grid.fill_with(|| rand::random_bool(FILL_CHANCE));
 
+        Self {
+            grid,
+            cols,
+            rows,
+            generation: 0,
+        }
+    }
     pub fn index_from_cords(&self, x: i32, y: i32) -> usize {
         let x = x.rem_euclid(self.cols as i32);
         let y = y.rem_euclid(self.rows as i32);
