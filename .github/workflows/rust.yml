@@ -16,6 +16,17 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: Install Linux Dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get install -y \
+            libx11-dev \
+            libxrandr-dev \
+            libinerama-dev \
+            libxi-dev \
+            libxcursor-dev \
+            libgl1-mesa-dev \
+            libasound2-dev
       - name: Build
         run: cargo build --verbose
       - name: Run tests
