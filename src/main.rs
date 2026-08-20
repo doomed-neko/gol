@@ -1,26 +1,23 @@
-use std::env;
-
-use gol::{CELL_COUNT, COLS, FILL_CHANCE, Game, ROWS, TILE_SIZE, WINDOW_HEIGHT, WINDOW_WIDTH};
+use gol::{args::GameArgs, game::Game};
 use raylib::prelude::*;
 
 fn main() {
-    let mut grid: Vec<bool> = vec![false; ROWS * COLS];
-    grid.fill_with(|| rand::random_bool(FILL_CHANCE));
-    let mut game = Game::new(grid, COLS, ROWS);
+    let args = GameArgs::new();
+    let mut grid: Vec<bool> = vec![false; args.rows() * args.cols()];
+    grid.fill_with(|| rand::random_bool(args.fill_chance));
+    let mut game = Game::new_random(args.cols(), args.rows(), args.fill_chance);
 
-    if let Some(arg) = env::args().nth(1)
-        && arg == "nogui"
-    {
-        for _ in 0..100 {
+    if args.no_gui > 0 {
+        for _ in 0..args.no_gui {
             game.next_gen();
         }
         return;
     }
-    println!("SIMULATING {CELL_COUNT} cells");
+    println!("SIMULATING {} cells", args.cell_count());
     game.next_gen();
 
     let (mut rl, thread) = raylib::init()
-        .size(WINDOW_WIDTH as i32, WINDOW_HEIGHT as i32)
+        .size(args.window_width as i32, args.window_height as i32)
         .title("rust+raylib Game Of Life")
         .build();
     let mut fps = 10;
@@ -120,7 +117,7 @@ fn main() {
         // randomize
         if rl.is_key_down(KeyboardKey::KEY_R) {
             rl.set_target_fps(50);
-            game.grid.fill_with(|| rand::random_bool(FILL_CHANCE));
+            game.grid.fill_with(|| rand::random_bool(args.fill_chance));
             game.generation = 0;
         }
         if rl.is_key_released(KeyboardKey::KEY_R) {
@@ -129,30 +126,30 @@ fn main() {
 
         if rl.is_mouse_button_down(MouseButton::MOUSE_BUTTON_LEFT) {
             let mouse_pos = rl.get_mouse_position();
-            let x = mouse_pos.x as i32 / TILE_SIZE as i32;
-            let y = mouse_pos.y as i32 / TILE_SIZE as i32;
+            let x = mouse_pos.x as i32 / args.tile_size as i32;
+            let y = mouse_pos.y as i32 / args.tile_size as i32;
             let index = game.index_from_cords(y, x);
             game.grid[index] = true;
         }
 
         if rl.is_mouse_button_down(MouseButton::MOUSE_BUTTON_RIGHT) {
             let mouse_pos = rl.get_mouse_position();
-            let x = mouse_pos.x as i32 / TILE_SIZE as i32;
-            let y = mouse_pos.y as i32 / TILE_SIZE as i32;
+            let x = mouse_pos.x as i32 / args.tile_size as i32;
+            let y = mouse_pos.y as i32 / args.tile_size as i32;
             let index = game.index_from_cords(y, x);
             game.grid[index] = false;
         }
         let mut d = rl.begin_drawing(&thread);
         d.clear_background(Color::BLACK);
-        for row in 0..ROWS {
-            for col in 0..COLS {
-                let idx = row * COLS + col;
+        for row in 0..args.rows() {
+            for col in 0..args.cols() {
+                let idx = row * args.cols() + col;
                 if game.grid[idx] {
                     d.draw_rectangle(
-                        row as i32 * TILE_SIZE as i32,
-                        col as i32 * TILE_SIZE as i32,
-                        TILE_SIZE as i32,
-                        TILE_SIZE as i32,
+                        row as i32 * args.tile_size as i32,
+                        col as i32 * args.tile_size as i32,
+                        args.tile_size as i32,
+                        args.tile_size as i32,
                         Color::GREEN,
                     );
                 }

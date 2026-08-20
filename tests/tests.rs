@@ -1,9 +1,9 @@
-use gol::Game;
+use gol::game::Game;
 
 #[test]
 fn test_game_creation() {
     let grid = vec![false; 12];
-    let game = Game::new(grid.clone(), 4, 3);
+    let game = Game::from_vec(grid.clone(), 4, 3);
 
     assert_eq!(game.cols, 4);
     assert_eq!(game.rows, 3);
@@ -13,7 +13,7 @@ fn test_game_creation() {
 
 #[test]
 fn test_index_from_cords_standard() {
-    let game = Game::new(vec![false; 12], 4, 3);
+    let game = Game::new(4, 3);
 
     // Standard within-bounds mappings
     assert_eq!(game.index_from_cords(0, 0), 0);
@@ -25,7 +25,7 @@ fn test_index_from_cords_standard() {
 
 #[test]
 fn test_index_from_cords_wrapping() {
-    let game = Game::new(vec![false; 12], 4, 3);
+    let game = Game::new(4, 3);
 
     // Wrapping negative coordinates (left and top borders)
     assert_eq!(game.index_from_cords(-1, 0), 3);
@@ -40,7 +40,7 @@ fn test_index_from_cords_wrapping() {
 
 #[test]
 fn test_cords_from_index() {
-    let game = Game::new(vec![false; 12], 4, 3);
+    let game = Game::new(4, 3);
 
     assert_eq!(game.cords_from_index(0), (0, 0));
     assert_eq!(game.cords_from_index(3), (3, 0));
@@ -56,7 +56,7 @@ fn test_next_cell_state_game_of_life_rules() {
     // . 1 .
     // . 1 .
     let initial_grid = vec![false, true, false, false, true, false, false, true, false];
-    let game = Game::new(initial_grid, 3, 3);
+    let game = Game::from_vec(initial_grid, 3, 3);
 
     // Center cell (1, 1) index 4: has 2 neighbors -> stays alive
     assert!(game.next_cell_state(4));
@@ -81,7 +81,7 @@ fn test_next_gen_blinker_oscillator() {
     // F F F
     let horizontal = vec![false, false, false, true, true, true, false, false, false];
 
-    let mut game = Game::new(vertical.clone(), 3, 3);
+    let mut game = Game::from_vec(vertical.clone(), 3, 3);
 
     // Step to generation 1
     game.next_gen();
@@ -97,7 +97,7 @@ fn test_next_gen_still_life_block() {
     // 2x2 block (still life pattern that shouldn't change)
     let block = vec![true, true, false, true, true, false, false, false, false];
 
-    let mut game = Game::new(block.clone(), 3, 3);
+    let mut game = Game::from_vec(block.clone(), 3, 3);
     game.next_gen();
 
     assert_eq!(game.grid, block);
