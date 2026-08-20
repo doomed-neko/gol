@@ -16,15 +16,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: cache pkgs
-        id: cache-apt
-        uses: actions/cache@v6
-        with:
-          path: /var/cache/apt/archives
-          key: ${{ runner.os }}-apt-sdl2-v1
-      - name: install sdl2
-        run: |
-          sudo apt-get install -y libsdl2-dev
       - name: Build
         run: cargo build --verbose
       - name: Run tests
