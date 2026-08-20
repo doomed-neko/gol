@@ -19,6 +19,17 @@ pub struct GameArgs {
     pub tile_size: u32,
     pub fill_chance: f64,
 }
+impl GameArgs {
+    pub fn cell_count(&self) -> u32 {
+        (self.window_height * self.window_width) / self.tile_size
+    }
+    pub fn rows(&self) -> usize {
+        (self.window_width / self.tile_size) as usize
+    }
+    pub fn cols(&self) -> usize {
+        (self.window_height / self.tile_size) as usize
+    }
+}
 
 impl Default for GameArgs {
     fn default() -> Self {
@@ -33,16 +44,6 @@ impl Default for GameArgs {
 }
 
 impl GameArgs {
-    pub fn cell_count(&self) -> u32 {
-        (self.window_height * self.window_width) / self.tile_size
-    }
-    pub fn rows(&self) -> usize {
-        (self.window_width / self.tile_size) as usize
-    }
-    pub fn cols(&self) -> usize {
-        (self.window_height / self.tile_size) as usize
-    }
-
     pub fn print_help(program_name: &str) {
         println!("Usage: {program_name} [OPTION]");
         println!("Simulate Conway's Game Of Life.");
