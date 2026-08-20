@@ -36,7 +36,7 @@ impl Game {
             let (col, row) = self.cords_from_index(index);
             (col as i32, row as i32)
         };
-        let mut n = 0;
+        let mut neighbor_count = 0;
         for x in [-1, 0, 1] {
             for y in [-1, 0, 1] {
                 if x == 0 && y == 0 {
@@ -51,14 +51,14 @@ impl Game {
                     continue;
                 }
                 if self.grid[self.index_from_cords(col + x, row + y)] {
-                    n += 1
+                    neighbor_count += 1
                 }
             }
         }
-        if current && (2..=3).contains(&n) {
+        if current && (2..=3).contains(&neighbor_count) {
             return true;
         }
-        if !current && n == 3 {
+        if !current && neighbor_count == 3 {
             return true;
         }
         false
