@@ -1,8 +1,7 @@
 use std::env;
 
 use gol::{COLS, FILL_CHANCE, Game, ROWS, TILE_SIZE, WINDOW_HEIGHT, WINDOW_WIDTH};
-use rand::random_bool;
-use sdl2::{event::Event, keyboard::Keycode, mouse::MouseButton, pixels::Color, rect::Rect};
+use raylib::prelude::*;
 
 fn main() {
     let mut grid: Vec<bool> = vec![false; ROWS * COLS];
@@ -17,78 +16,130 @@ fn main() {
         }
         return;
     }
-    let sdl_context = sdl2::init().unwrap();
-    let video_subsystem = sdl_context.video().unwrap();
-    let window = video_subsystem
-        .window("rust+sdl2 Game Of Life", WINDOW_WIDTH, WINDOW_HEIGHT)
-        .position_centered()
-        .build()
-        .unwrap();
-    let mut canvas = window.into_canvas().build().unwrap();
+    game.next_gen();
 
-    canvas.clear();
-    canvas.present();
-    let mut event_pump = sdl_context.event_pump().unwrap();
-    'running: loop {
-        canvas.set_draw_color(Color::GREEN);
+    let (mut rl, thread) = raylib::init()
+        .size(WINDOW_WIDTH as i32, WINDOW_HEIGHT as i32)
+        .title("rust+raylib Game Of Life")
+        .build();
+    let mut fps = 10;
+    rl.set_target_fps(fps);
+    while !rl.window_should_close() {
+        // quit
+        if rl.is_key_down(KeyboardKey::KEY_Q) {
+            break;
+        }
+
+        // tick next generation (hold)
+        if rl.is_key_down(KeyboardKey::KEY_SPACE) {
+            game.next_gen();
+        }
+
+        // tick next generation (once)
+        if rl.is_key_pressed(KeyboardKey::KEY_N) {
+            game.next_gen();
+        }
+
+        if rl.is_key_pressed(KeyboardKey::KEY_ONE) {
+            fps = 10;
+            rl.set_target_fps(fps);
+        }
+        if rl.is_key_pressed(KeyboardKey::KEY_TWO) {
+            fps = 20;
+            rl.set_target_fps(fps);
+        }
+        if rl.is_key_pressed(KeyboardKey::KEY_THREE) {
+            fps = 30;
+            rl.set_target_fps(fps);
+        }
+        if rl.is_key_pressed(KeyboardKey::KEY_FOUR) {
+            fps = 40;
+            rl.set_target_fps(fps);
+        }
+        if rl.is_key_pressed(KeyboardKey::KEY_FIVE) {
+            fps = 50;
+            rl.set_target_fps(fps);
+        }
+        if rl.is_key_pressed(KeyboardKey::KEY_SIX) {
+            fps = 60;
+            rl.set_target_fps(fps);
+        }
+        if rl.is_key_pressed(KeyboardKey::KEY_SEVEN) {
+            fps = 70;
+            rl.set_target_fps(fps);
+        }
+        if rl.is_key_pressed(KeyboardKey::KEY_EIGHT) {
+            fps = 80;
+            rl.set_target_fps(fps);
+        }
+        if rl.is_key_pressed(KeyboardKey::KEY_NINE) {
+            fps = 90;
+            rl.set_target_fps(fps);
+        }
+        if rl.is_key_pressed(KeyboardKey::KEY_ZERO) {
+            fps = 100;
+            rl.set_target_fps(fps);
+        }
+
+        // FPS -1
+        if rl.is_key_pressed(KeyboardKey::KEY_MINUS) {
+            fps = fps.saturating_sub(1).max(1);
+            rl.set_target_fps(fps);
+        }
+
+        // FPS +1
+        if rl.is_key_pressed(KeyboardKey::KEY_EQUAL) {
+            fps += 1;
+            rl.set_target_fps(fps);
+        }
+
+        // clear (kill all cells)
+        if rl.is_key_pressed(KeyboardKey::KEY_C) {
+            game.grid.fill(false);
+        }
+
+        // randomize
+        if rl.is_key_pressed(KeyboardKey::KEY_R) {
+            game.grid.fill_with(|| rand::random_bool(FILL_CHANCE));
+        }
+
+        if rl.is_mouse_button_down(MouseButton::MOUSE_BUTTON_LEFT) {
+            let mouse_pos = rl.get_mouse_position();
+            let x = mouse_pos.x as i32 / TILE_SIZE as i32;
+            let y = mouse_pos.y as i32 / TILE_SIZE as i32;
+            let index = game.index_from_cords(y, x);
+            game.grid[index] = true;
+        }
+
+        if rl.is_mouse_button_down(MouseButton::MOUSE_BUTTON_RIGHT) {
+            let mouse_pos = rl.get_mouse_position();
+            let x = mouse_pos.x as i32 / TILE_SIZE as i32;
+            let y = mouse_pos.y as i32 / TILE_SIZE as i32;
+            let index = game.index_from_cords(y, x);
+            game.grid[index] = false;
+        }
+        let mut d = rl.begin_drawing(&thread);
+        d.clear_background(Color::BLACK);
         for row in 0..ROWS {
             for col in 0..COLS {
                 let idx = row * COLS + col;
                 if game.grid[idx] {
-                    canvas
-                        .fill_rect(Rect::new(
-                            row as i32 * TILE_SIZE as i32,
-                            col as i32 * TILE_SIZE as i32,
-                            TILE_SIZE,
-                            TILE_SIZE,
-                        ))
-                        .ok();
+                    d.draw_rectangle(
+                        row as i32 * TILE_SIZE as i32,
+                        col as i32 * TILE_SIZE as i32,
+                        TILE_SIZE as i32,
+                        TILE_SIZE as i32,
+                        Color::GREEN,
+                    );
                 }
             }
         }
-        for event in event_pump.poll_iter() {
-            match event {
-                Event::Quit { .. }
-                | Event::KeyDown {
-                    keycode: Some(Keycode::Escape),
-                    ..
-                }
-                | Event::KeyDown {
-                    keycode: Some(Keycode::Q),
-                    ..
-                } => break 'running,
-                Event::KeyDown {
-                    keycode: Some(Keycode::Return),
-                    ..
-                }
-                | Event::KeyDown {
-                    keycode: Some(Keycode::Space),
-                    ..
-                } => {
-                    game.next_gen();
-                }
-                Event::KeyDown {
-                    keycode: Some(Keycode::R),
-                    ..
-                } => {
-                    game.grid.fill_with(|| random_bool(FILL_CHANCE));
-                }
-                Event::MouseButtonDown {
-                    mouse_btn: MouseButton::Left,
-                    mut x,
-                    mut y,
-                    ..
-                } => {
-                    x /= TILE_SIZE as i32;
-                    y /= TILE_SIZE as i32;
-                    let index = game.index_from_cords(y, x);
-                    game.grid[index] = !game.grid[index];
-                }
-                _ => {}
-            }
-        }
-        canvas.present();
-        canvas.set_draw_color(Color::BLACK);
-        canvas.clear();
+        d.draw_text(
+            &format!("Generation: {}\nFPS: {fps}", game.generation),
+            50,
+            20,
+            25,
+            Color::WHITE,
+        );
     }
 }
