@@ -22,7 +22,6 @@ jobs:
           sudo apt-get install -y \
             libx11-dev \
             libxrandr-dev \
-            libinerama-dev \
             libxi-dev \
             libxcursor-dev \
             libgl1-mesa-dev \
