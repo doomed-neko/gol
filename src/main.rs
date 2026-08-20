@@ -1,6 +1,6 @@
 use std::env;
 
-use gol::{COLS, FILL_CHANCE, Game, ROWS, TILE_SIZE, WINDOW_HEIGHT, WINDOW_WIDTH};
+use gol::{CELL_COUNT, COLS, FILL_CHANCE, Game, ROWS, TILE_SIZE, WINDOW_HEIGHT, WINDOW_WIDTH};
 use raylib::prelude::*;
 
 fn main() {
@@ -16,13 +16,14 @@ fn main() {
         }
         return;
     }
+    println!("SIMULATING {CELL_COUNT} cells");
     game.next_gen();
 
     let (mut rl, thread) = raylib::init()
         .size(WINDOW_WIDTH as i32, WINDOW_HEIGHT as i32)
         .title("rust+raylib Game Of Life")
         .build();
-    let mut fps = 10;
+    let mut fps = u32::MAX;
     rl.set_target_fps(fps);
     while !rl.window_should_close() {
         // quit
@@ -81,14 +82,26 @@ fn main() {
             rl.set_target_fps(fps);
         }
 
-        // FPS -1
+        // FPS -1 (one at a time)
         if rl.is_key_pressed(KeyboardKey::KEY_MINUS) {
             fps = fps.saturating_sub(1).max(1);
             rl.set_target_fps(fps);
         }
 
-        // FPS +1
+        // FPS +1 (one at a time)
         if rl.is_key_pressed(KeyboardKey::KEY_EQUAL) {
+            fps += 1;
+            rl.set_target_fps(fps);
+        }
+
+        // FPS -1 (hold)
+        if rl.is_key_down(KeyboardKey::KEY_LEFT_BRACKET) {
+            fps = fps.saturating_sub(1).max(1);
+            rl.set_target_fps(fps);
+        }
+
+        // FPS +1 (hold)
+        if rl.is_key_down(KeyboardKey::KEY_RIGHT_BRACKET) {
             fps += 1;
             rl.set_target_fps(fps);
         }
@@ -99,8 +112,9 @@ fn main() {
         }
 
         // randomize
-        if rl.is_key_pressed(KeyboardKey::KEY_R) {
+        if rl.is_key_down(KeyboardKey::KEY_R) {
             game.grid.fill_with(|| rand::random_bool(FILL_CHANCE));
+            game.generation = 0;
         }
 
         if rl.is_mouse_button_down(MouseButton::MOUSE_BUTTON_LEFT) {
@@ -135,9 +149,9 @@ fn main() {
             }
         }
         d.draw_text(
-            &format!("Generation: {}\nFPS: {fps}", game.generation),
-            50,
-            20,
+            &format!("Generation: {}\nFPS target: {fps}", game.generation),
+            10,
+            900,
             25,
             Color::WHITE,
         );
