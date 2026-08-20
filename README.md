@@ -1,6 +1,5 @@
 # gol (Game Of Life)
 
-[![Static Badge](https://img.shields.io/badge/See_on-handmade.network-blue)](https://handmade.network/p/883/game-of-life)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/doomed-neko/gol/rust.yml)
 
 This is my implementation of [Conway's Game Of Life](https://en.wikipedia.org/wiki/Conway's_Game_of_Life), built in rust and uses [raylib](https://raylib.com) for the display.
