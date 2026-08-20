@@ -119,8 +119,12 @@ fn main() {
 
         // randomize
         if rl.is_key_down(KeyboardKey::KEY_R) {
+            rl.set_target_fps(50);
             game.grid.fill_with(|| rand::random_bool(FILL_CHANCE));
             game.generation = 0;
+        }
+        if rl.is_key_released(KeyboardKey::KEY_R) {
+            rl.set_target_fps(fps);
         }
 
         if rl.is_mouse_button_down(MouseButton::MOUSE_BUTTON_LEFT) {
@@ -155,9 +159,9 @@ fn main() {
             }
         }
         d.draw_text(
-            &format!("Generation: {}\nFPS target: {fps}", game.generation),
+            &format!("Generation: {}\nFPS target: {fps}", game.generation,),
             10,
-            900,
+            850,
             25,
             Color::WHITE,
         );
