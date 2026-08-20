@@ -9,11 +9,17 @@ pub struct Game {
     pub grid: Vec<bool>,
     pub cols: usize,
     pub rows: usize,
+    pub generation: usize,
 }
 
 impl Game {
     pub fn new(grid: Vec<bool>, cols: usize, rows: usize) -> Self {
-        Self { grid, cols, rows }
+        Self {
+            grid,
+            cols,
+            rows,
+            generation: 0,
+        }
     }
 
     pub fn index_from_cords(&self, x: i32, y: i32) -> usize {
@@ -70,5 +76,6 @@ impl Game {
             .map(|x| self.next_cell_state(x))
             .collect();
         self.grid = new_gen;
+        self.generation += 1;
     }
 }
