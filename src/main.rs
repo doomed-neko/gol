@@ -1,8 +1,10 @@
+use std::ops::Add;
+
 use gol::{args::GameArgs, game::Game};
 use raylib::prelude::*;
 
 fn main() {
-    let args = GameArgs::new();
+    let mut args = GameArgs::new();
     let mut grid: Vec<bool> = vec![false; args.rows() * args.cols()];
     grid.fill_with(|| rand::random_bool(args.fill_chance));
     let mut game = Game::new_random(args.cols(), args.rows(), args.fill_chance);
@@ -16,13 +18,24 @@ fn main() {
     println!("SIMULATING {} cells", args.cell_count());
     game.next_gen();
 
-    let (mut rl, thread) = raylib::init()
+    let mut builder = raylib::init();
+    builder
         .size(args.window_width as i32, args.window_height as i32)
-        .title("rust+raylib Game Of Life")
-        .build();
-    let mut fps = 10;
+        .resizable()
+        .title("Game Of Life");
+    if args.vsync {
+        builder.vsync();
+    }
+    let (mut rl, thread) = builder.build();
+    rl.set_window_min_size(500, 300);
+    let mut fps = 20;
     rl.set_target_fps(fps);
     while !rl.window_should_close() {
+        if rl.is_window_resized() {
+            args.window_height = rl.get_screen_height() as u32;
+            args.window_width = rl.get_screen_width() as u32;
+            game = Game::new_random(args.cols(), args.rows(), args.fill_chance);
+        }
         // quit
         if rl.is_key_down(KeyboardKey::KEY_Q) {
             break;
@@ -36,6 +49,26 @@ fn main() {
         // tick next generation (once)
         if rl.is_key_pressed(KeyboardKey::KEY_N) {
             game.next_gen();
+        }
+
+        // toggle stats text (once)
+        if rl.is_key_pressed(KeyboardKey::KEY_I) {
+            args.show_stats = !args.show_stats
+        }
+
+        // decrement cell count
+        if rl.is_key_down(KeyboardKey::KEY_COMMA) {
+            args.tile_size = args.tile_size.saturating_sub(1).max(1);
+            game = Game::new_random(args.cols(), args.rows(), args.fill_chance);
+        }
+        //
+        // increment cell count
+        if rl.is_key_down(KeyboardKey::KEY_PERIOD) {
+            args.tile_size = args
+                .tile_size
+                .add(1)
+                .min(args.window_height.min(args.window_width));
+            game = Game::new_random(args.cols(), args.rows(), args.fill_chance);
         }
 
         if rl.is_key_pressed(KeyboardKey::KEY_ONE) {
@@ -155,12 +188,19 @@ fn main() {
                 }
             }
         }
-        d.draw_text(
-            &format!("Generation: {}\nFPS target: {fps}", game.generation,),
-            10,
-            850,
-            25,
-            Color::WHITE,
-        );
+        if args.show_stats {
+            d.draw_text(
+                &format!(
+                    "Generation: {generation}\nCell count: {cell_count}\nFPS target: {fps}",
+                    generation = game.generation,
+                    cell_count = args.cell_count()
+                ),
+                (args.window_width as f64 * 0.02) as i32,
+                ((args.window_height - 80) as f32 * 0.99) as i32,
+                // (args.window_height as f64 * 0.9) as i32,
+                25,
+                Color::WHITE,
+            );
+        }
     }
 }

@@ -8,7 +8,7 @@ pub struct Game {
 
 impl Game {
     pub fn new(cols: usize, rows: usize) -> Self {
-        let grid: Vec<bool> = Vec::with_capacity(cols * rows);
+        let grid: Vec<bool> = vec![false; cols * rows];
         Self {
             grid,
             cols,
@@ -25,7 +25,7 @@ impl Game {
         }
     }
     pub fn new_random(cols: usize, rows: usize, fill_chance: f64) -> Self {
-        let mut grid = Vec::with_capacity(cols * rows);
+        let mut grid = vec![false; cols * rows];
         grid.fill_with(|| rand::random_bool(fill_chance));
 
         Self {

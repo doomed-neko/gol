@@ -18,6 +18,8 @@ pub struct GameArgs {
     pub window_height: u32,
     pub tile_size: u32,
     pub fill_chance: f64,
+    pub show_stats: bool,
+    pub vsync: bool,
 }
 impl GameArgs {
     pub fn cell_count(&self) -> u32 {
@@ -39,6 +41,8 @@ impl Default for GameArgs {
             window_height: 960,
             tile_size: 10,
             fill_chance: 0.3,
+            show_stats: true,
+            vsync: false,
         }
     }
 }
@@ -50,10 +54,12 @@ impl GameArgs {
         println!();
         println!("  -?\t--help\t\t\tPrint helo");
         println!("  -n\t--nogui\t\t\tRun N generations without gui and exit");
+        println!("  -i\t--hide-stats\t\tHide the stats text");
         println!("  -f\t--fill-chance\t\tSet the random fill chance [0,1]");
         println!("  -w\t--window-width\t\tSet the window width");
         println!("  -h\t--window-height\t\tSet the window width");
         println!("  -s\t--tile-size\t\tSet the tile size");
+        println!("  -v\t--vsync\t\t\tSync fps to screen refresh rate");
     }
 
     fn print_error_and_exit(message: &str, err: impl Error, program_name: &str) -> ! {
@@ -72,6 +78,12 @@ impl GameArgs {
             if arg == "-?" || arg == "--help" {
                 Self::print_help(&program_name);
                 exit(0);
+            }
+            if arg == "-i" || arg == "--hide-stats" {
+                default.show_stats = false;
+            }
+            if arg == "-v" || arg == "--vsync" {
+                default.vsync = true;
             }
             parse_arg!(default.no_gui, "-n", "--nogui", arg, args, &program_name);
             parse_arg!(
