@@ -150,19 +150,13 @@ pub fn handle_window_resize(rl: &RaylibHandle, args: &mut GameArgs, game: &mut G
 }
 
 pub fn handle_mouse_clicks(rl: &RaylibHandle, args: GameArgs, game: &mut Game) {
+    let mouse_pos = rl.get_mouse_position();
+    let x = mouse_pos.x as i32 / args.tile_size as i32;
+    let y = mouse_pos.y as i32 / args.tile_size as i32;
+    let index = game.index_from_cords(y, x);
     if rl.is_mouse_button_down(MouseButton::MOUSE_BUTTON_LEFT) {
-        let mouse_pos = rl.get_mouse_position();
-        let x = mouse_pos.x as i32 / args.tile_size as i32;
-        let y = mouse_pos.y as i32 / args.tile_size as i32;
-        let index = game.index_from_cords(y, x);
         game.grid[index] = true;
-    }
-
-    if rl.is_mouse_button_down(MouseButton::MOUSE_BUTTON_RIGHT) {
-        let mouse_pos = rl.get_mouse_position();
-        let x = mouse_pos.x as i32 / args.tile_size as i32;
-        let y = mouse_pos.y as i32 / args.tile_size as i32;
-        let index = game.index_from_cords(y, x);
+    } else if rl.is_mouse_button_down(MouseButton::MOUSE_BUTTON_RIGHT) {
         game.grid[index] = false;
     }
 }
