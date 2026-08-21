@@ -10,7 +10,10 @@ This is my implementation of [Conway's Game Of Life]
 
 - Hold down the `space` key to see the generations progress or use the `N` key
   to step 1 generation at a time
-- Click on any cell to toggle it's state
+- Left click on any cell to make it alive
+- Right click on any cell to kill it
+- Use the mouse wheel to zoom in/out
+- Use the mouse wheel button to pan
 - Use the `+`/`-` keys to change the target FPS by 1, or hold down [/] keys for
   continuous change
 - Use the `,`/`.` keys to change the cell size by 1

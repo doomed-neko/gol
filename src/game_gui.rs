@@ -149,8 +149,9 @@ pub fn handle_window_resize(rl: &RaylibHandle, args: &mut GameArgs, game: &mut G
     }
 }
 
-pub fn handle_mouse_clicks(rl: &RaylibHandle, args: GameArgs, game: &mut Game) {
+pub fn handle_mouse_clicks(rl: &RaylibHandle, args: GameArgs, game: &mut Game, camera: Camera2D) {
     let mouse_pos = rl.get_mouse_position();
+    let mouse_pos = rl.get_screen_to_world2D(mouse_pos, camera);
     let x = mouse_pos.x as i32 / args.tile_size as i32;
     let y = mouse_pos.y as i32 / args.tile_size as i32;
     let index = game.index_from_cords(y, x);
