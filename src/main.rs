@@ -54,7 +54,7 @@ fn main() {
             camera.zoom = (camera.zoom * zoom_factor).clamp(0.1, 50.0);
         }
         handle_keyboard(&mut rl, &mut game, &mut args);
-        handle_window_resize(&mut rl, &mut args, &mut game);
+        handle_window_resize(&rl, &mut args, &mut game);
         handle_mouse_clicks(&rl, args, &mut game, camera);
 
         let mut d: RaylibDrawHandle<'_> = rl.begin_drawing(&thread);
