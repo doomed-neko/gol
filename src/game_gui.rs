@@ -118,6 +118,7 @@ pub fn handle_keyboard(rl: &mut RaylibHandle, game: &mut Game, args: &mut GameAr
         game.generation = 0;
     }
     if rl.is_key_released(KeyboardKey::KEY_R) {
+        game.next_gen();
         rl.set_target_fps(args.fps);
     }
 }
