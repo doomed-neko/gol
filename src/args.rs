@@ -8,7 +8,7 @@ use std::{
 macro_rules! parse_arg {
     ($field:expr,$short_cmd:literal, $long_cmd:literal, $arg_var:expr,$args_var:expr, $pn_var:expr) => {
         if $arg_var == $short_cmd || $arg_var == $long_cmd {
-            $field = Self::parse_next_arg(&mut $args_var, $field, $pn_var);
+            $field = Self::parse_next_arg(&mut $args_var, $pn_var);
         }
     };
 }
@@ -48,8 +48,8 @@ impl GameArgs {
         println!("Usage: {program_name} [OPTION]");
         println!("Simulate Conway's Game Of Life.");
         println!();
-        println!("  -?\t--help\t\tPrint helo");
-        println!("  -n\t--nogui\t\tRun 100 generations without gui and exit");
+        println!("  -?\t--help\t\t\tPrint helo");
+        println!("  -n\t--nogui\t\t\tRun N generations without gui and exit");
         println!("  -f\t--fill-chance\t\tSet the random fill chance [0,1]");
         println!("  -w\t--window-width\t\tSet the window width");
         println!("  -h\t--window-height\t\tSet the window width");
@@ -109,15 +109,20 @@ impl GameArgs {
         }
         default
     }
-    fn parse_next_arg<T>(args: &mut Args, default: T, program_name: &str) -> T
+    fn parse_next_arg<T>(args: &mut Args, program_name: &str) -> T
     where
         T: FromStr,
         <T as std::str::FromStr>::Err: std::error::Error,
     {
-        args.next().map_or(default, |x| {
+        let Some(next_value) = args.next().map(|x| {
             x.parse::<T>().unwrap_or_else(|err| {
                 Self::print_error_and_exit("faield to parse value", err, program_name)
             })
-        })
+        }) else {
+            eprintln!("Error: Bad usage");
+            Self::print_help(program_name);
+            exit(1);
+        };
+        next_value
     }
 }
