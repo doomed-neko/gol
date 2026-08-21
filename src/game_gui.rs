@@ -129,14 +129,17 @@ pub fn draw_stats(game: &Game, args: GameArgs, d: &mut RaylibDrawHandle) {
     } else {
         "unlimited".to_string()
     };
+    let text = &format!(
+        "Alive: {alive}\nGeneration: {generation}\nCell count: {cell_count}\nFPS target: {fps}",
+        alive = game.alive_cells().len(),
+        generation = game.generation,
+        cell_count = args.cell_count(),
+    );
+    let y_offset = text.lines().count() as u32 * 25 + 10;
     d.draw_text(
-        &format!(
-            "Generation: {generation}\nCell count: {cell_count}\nFPS target: {fps}",
-            generation = game.generation,
-            cell_count = args.cell_count(),
-        ),
+        text,
         (args.window_width as f64 * 0.02) as i32,
-        ((args.window_height - 80) as f32 * 0.99) as i32,
+        ((args.window_height - y_offset) as f32 * 0.99) as i32,
         25,
         Color::WHITE,
     );
