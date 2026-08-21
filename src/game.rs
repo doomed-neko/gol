@@ -91,4 +91,12 @@ impl Game {
         self.grid = new_gen;
         self.generation += 1;
     }
+
+    pub fn alive_cells(&self) -> Vec<usize> {
+        self.grid
+            .iter()
+            .enumerate()
+            .filter_map(|(idx, &x)| if x { Some(idx) } else { None })
+            .collect()
+    }
 }

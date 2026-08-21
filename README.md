@@ -32,6 +32,7 @@ This is my implementation of [Conway's Game Of Life]
   -h   --window-height    Set the window width
   -s   --tile-size        Set the tile size
   -v   --vsync            Sync fps to screen refresh rate
+  -r   --fps              Set the rendering target fps
 ```
 
 ![1787255921697496397.png](https://assets.media.handmade.network/f9fd2960-98f4-4a57-a238-b112028ae512/1787255921697496397.png)

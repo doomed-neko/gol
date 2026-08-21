@@ -8,3 +8,4 @@
 
 pub mod args;
 pub mod game;
+pub mod game_gui;

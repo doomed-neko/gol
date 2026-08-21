@@ -12,11 +12,13 @@ macro_rules! parse_arg {
         }
     };
 }
+#[derive(Debug, Clone, Copy)]
 pub struct GameArgs {
     pub no_gui: usize,
     pub window_width: u32,
     pub window_height: u32,
     pub tile_size: u32,
+    pub fps: u32,
     pub fill_chance: f64,
     pub show_stats: bool,
     pub vsync: bool,
@@ -43,6 +45,7 @@ impl Default for GameArgs {
             fill_chance: 0.3,
             show_stats: true,
             vsync: false,
+            fps: 20,
         }
     }
 }
@@ -60,6 +63,7 @@ impl GameArgs {
         println!("  -h\t--window-height\t\tSet the window width");
         println!("  -s\t--tile-size\t\tSet the tile size");
         println!("  -v\t--vsync\t\t\tSync fps to screen refresh rate");
+        println!("  -r\t--fps\t\t\tSet target fps, zero means unlimited");
     }
 
     fn print_error_and_exit(message: &str, err: impl Error, program_name: &str) -> ! {
@@ -86,6 +90,7 @@ impl GameArgs {
                 default.vsync = true;
             }
             parse_arg!(default.no_gui, "-n", "--nogui", arg, args, &program_name);
+            parse_arg!(default.fps, "-r", "--fps", arg, args, &program_name);
             parse_arg!(
                 default.fill_chance,
                 "-f",
